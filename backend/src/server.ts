@@ -48,6 +48,7 @@ export async function start() {
   }
 }
 
-if (require.main === module) {
+// Auto-start server when run directly
+if (process.argv[1]?.endsWith('server.js') || process.argv[1]?.endsWith('server.ts')) {
   start();
 }
