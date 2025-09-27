@@ -71,3 +71,4 @@
 - HF tokens remain valid until the user revokes them; backend encrypts at rest and logs usage per job.
 - Email notifications on job completion/failure (extensible to future channels).
 - Artifacts downloadable from user history and accessible through secure API endpoints.
+

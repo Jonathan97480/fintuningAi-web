@@ -9,6 +9,7 @@ Modernisation du package de fine-tuning avec interface web Next.js, orchestratio
 
 ## Ressources cles
 - [Roadmap detaillee](ROADMAP.md)
+- [Contrats API Phase 1](docs/phase1-api-contracts.md)
 - Scripts Python : `fine_tune_3b.py`, `kilo_dataset_builder.py`
 - Environnements : `setup_env.sh`, `setup_env.bat`, `install_pytorch_gpu.bat`
 
@@ -35,5 +36,6 @@ Consulter `ROADMAP.md` pour la sequence complete des phases (decouverte, archite
 - shared/ : schemas Zod, types partages, clients API.
 - ops/ : docker-compose, migrations, templates .env.
 - artifacts/ : stockage local des datasets, logs, modeles generes (gitignore).
+
 
 
