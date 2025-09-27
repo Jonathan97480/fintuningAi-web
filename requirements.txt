@@ -1,0 +1,17 @@
+PyGithub>=2.3.0
+requests>=2.32.0
+tqdm>=4.66.0
+transformers
+datasets
+peft
+accelerate
+bitsandbytes
+jupyter
+torch>=2.0.0
+sentencepiece
+safetensors
+numpy
+protobuf
+huggingface_hub
+pandas
+scikit-learn
