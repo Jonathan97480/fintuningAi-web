@@ -14,11 +14,12 @@
 - Establish design direction: neon-futuristic dark theme (violet gradients, glow, bold typography) per provided reference.
 
 ## Phase 1 - Architecture and Environment
-- Decide on deployment topology: Next.js (React/TypeScript plus SASS) for UI and API routes, orchestrating Python workers.
-- Specify communication contract between Node and Python (process spawning, message format, logging, error handling).
-- Plan Hugging Face credential management (env vars, rotation policy, caching location).
-- Draft high-level sequence diagrams for key flows (dataset import, fine-tuning launch, progress polling).
-
+**Status:** In progress (see docs/phase1-architecture.md).
+- Adopt split-service layout: `frontend/` Next.js UI, `backend/` Fastify API, `workers/python/` orchestrated via BullMQ.
+- Define API contracts and process communication between backend and Python runners (payload schema, status events, logging structures).
+- Finalize Hugging Face credential management (user profile tokens, service fallback, encryption, cache strategy).
+- Document key flow sequences (fine-tuning job, daily model refresh, dataset search) for implementation hand-off.
+- Scaffold baseline project directories and ops assets (docker-compose, env templates, placeholders).
 ## Phase 2 - Persistence Layer
 - Design SQLite schema: users, API tokens, projects, datasets (Hugging Face references plus local paths), fine-tuning jobs, job events/logs, produced models.
 - Choose migration tool or lightweight ORM for TypeScript (for example Prisma or Drizzle) and migration workflow.
@@ -65,4 +66,3 @@
 - Create build scripts (Next.js, Python packaging) and CI pipeline (lint, tests, Docker image if needed).
 - Document operational playbooks: adding new models/datasets, rotating tokens, troubleshooting jobs.
 - Plan release milestones and future enhancements (multi-user roles, advanced analytics, model registry integration).
-

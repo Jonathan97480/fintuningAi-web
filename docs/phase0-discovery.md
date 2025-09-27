@@ -48,7 +48,7 @@ PyGithub, requests, tqdm, transformers, datasets, peft, accelerate, bitsandbytes
 - Stable internet for Hugging Face downloads; cache directory sizing for multi-GB models.
 
 ### External credentials and configs
-- `HF_TOKEN` for authenticated downloads/uploads.
+- `HF_TOKEN` provided per user via profile settings; store securely server-side for Hugging Face calls.
 - (Future) User-issued API tokens for the web interface (to be stored server-side).
 - Optional GitHub PAT if cloning private repositories via `RepoUrlLoader`.
 
@@ -67,10 +67,12 @@ PyGithub, requests, tqdm, transformers, datasets, peft, accelerate, bitsandbytes
 
 ## 6. Follow-up Items
 - Confirm minimum GPU memory targets for production (documented requirement for 3B vs 7B flows).
-- Decide on Hugging Face token storage strategy (server env var vs encrypted DB) before Phase 1.
+- Validate Hugging Face token encryption/rotation implementation during Phase 1 scaffolding.
 - Catalogue which notebook steps must become reusable Python modules for the upcoming API runner.
 - Gather any additional datasets/models the client expects beyond Qwen2.5 variants.
 - Define daily Hugging Face model refresh job and rate-limited dataset search flow for the UI.
+
+
 
 
 
