@@ -2,11 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Queue } from 'bullmq'
 import { fineTuneQueue, datasetQueue } from '../services/jobQueue'
 
-// Mock Redis connection for testing
-vi.mock('ioredis', () => ({
-    default: vi.fn().mockImplementation(() => ({}))
-}))
-
 describe('Job Queue Services', () => {
     beforeEach(() => {
         vi.clearAllMocks()

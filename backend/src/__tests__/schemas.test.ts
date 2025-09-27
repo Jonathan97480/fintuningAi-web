@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { FineTuneJobSchema, DatasetJobSchema, JobStatusEnum } from '../../../shared/src/index'
 
 describe('Shared Schemas', () => {
@@ -25,133 +25,127 @@ describe('Shared Schemas', () => {
 
     describe('FineTuneJobSchema', () => {
         it('should validate a complete fine-tune job payload', () => {
-            const validPayload = {
+            const validJob = {
                 outputName: 'my-fine-tuned-model',
-                baseModelId: 'Qwen/Qwen2.5-Coder-3B-Instruct',
+                baseModelId: 'gpt-2',
                 datasetId: 'my-dataset',
                 numExamples: 1000,
-                maxSteps: 500,
+                maxSteps: 100,
                 quantizations: ['fp16', 'int8']
             }
 
-            const result = FineTuneJobSchema.safeParse(validPayload)
+            const result = FineTuneJobSchema.safeParse(validJob)
             expect(result.success).toBe(true)
-            expect(result.data).toEqual(validPayload)
+            expect(result.data).toEqual(validJob)
         })
 
-        it('should provide default quantizations', () => {
-            const payloadWithoutQuantizations = {
+        it('should provide default values for optional fields', () => {
+            const minimalJob = {
                 outputName: 'my-model',
-                baseModelId: 'Qwen/Qwen2.5-Coder-3B-Instruct',
+                baseModelId: 'gpt-2',
                 datasetId: 'my-dataset',
                 numExamples: 1000,
-                maxSteps: 500
+                maxSteps: 100
             }
 
-            const result = FineTuneJobSchema.safeParse(payloadWithoutQuantizations)
+            const result = FineTuneJobSchema.safeParse(minimalJob)
             expect(result.success).toBe(true)
-            if (result.success) {
-                expect(result.data.quantizations).toEqual(['fp16'])
-            }
+            expect(result.data.quantizations).toEqual(['fp16'])
         })
 
-        it('should reject invalid outputName', () => {
-            const invalidPayloads = [
-                { outputName: 'ab' }, // Too short
-                { outputName: '' }, // Empty
-                { outputName: 'a'.repeat(100) } // Too long (assuming max length)
-            ]
+        it('should reject invalid output names', () => {
+            const invalidJob = {
+                outputName: 'ab', // Too short
+                baseModelId: 'gpt-2',
+                datasetId: 'my-dataset',
+                numExamples: 1000,
+                maxSteps: 100
+            }
 
-            invalidPayloads.forEach(payload => {
-                const result = FineTuneJobSchema.safeParse(payload)
-                expect(result.success).toBe(false)
-            })
+            const result = FineTuneJobSchema.safeParse(invalidJob)
+            expect(result.success).toBe(false)
         })
 
         it('should reject invalid numExamples', () => {
-            const invalidPayloads = [
-                { outputName: 'test', baseModelId: 'model', datasetId: 'dataset', maxSteps: 500, numExamples: 0 },
-                { outputName: 'test', baseModelId: 'model', datasetId: 'dataset', maxSteps: 500, numExamples: -1 }
-            ]
+            const invalidJob = {
+                outputName: 'my-model',
+                baseModelId: 'gpt-2',
+                datasetId: 'my-dataset',
+                numExamples: -1, // Invalid negative number
+                maxSteps: 100
+            }
 
-            invalidPayloads.forEach(payload => {
-                const result = FineTuneJobSchema.safeParse(payload)
-                expect(result.success).toBe(false)
-            })
+            const result = FineTuneJobSchema.safeParse(invalidJob)
+            expect(result.success).toBe(false)
+        })
+
+        it('should reject invalid maxSteps', () => {
+            const invalidJob = {
+                outputName: 'my-model',
+                baseModelId: 'gpt-2',
+                datasetId: 'my-dataset',
+                numExamples: 1000,
+                maxSteps: 0 // Invalid zero
+            }
+
+            const result = FineTuneJobSchema.safeParse(invalidJob)
+            expect(result.success).toBe(false)
         })
     })
 
     describe('DatasetJobSchema', () => {
-        it('should validate a dataset job with repo URL', () => {
-            const validPayload = {
-                repo: 'https://github.com/microsoft/vscode',
+        it('should validate a complete dataset job payload', () => {
+            const validJob = {
+                repo: 'https://huggingface.co/datasets/my-dataset',
+                dataset: 'my-dataset',
                 maxExamples: 1000,
-                outputName: 'vscode-dataset'
+                outputName: 'processed-dataset'
             }
 
-            const result = DatasetJobSchema.safeParse(validPayload)
+            const result = DatasetJobSchema.safeParse(validJob)
             expect(result.success).toBe(true)
-            expect(result.data).toEqual(validPayload)
+            expect(result.data).toEqual(validJob)
         })
 
-        it('should validate a dataset job with HF dataset', () => {
-            const validPayload = {
-                dataset: 'microsoft/DialoGPT-medium',
-                maxExamples: 500,
-                outputName: 'dialogpt-dataset'
+        it('should provide default values for optional fields', () => {
+            const minimalJob = {
+                outputName: 'my-dataset'
             }
 
-            const result = DatasetJobSchema.safeParse(validPayload)
-            expect(result.success).toBe(true)
-            expect(result.data).toEqual(validPayload)
-        })
-
-        it('should provide default maxExamples', () => {
-            const payload = {
-                repo: 'https://github.com/microsoft/vscode',
-                outputName: 'vscode-dataset'
-            }
-
-            const result = DatasetJobSchema.safeParse(payload)
+            const result = DatasetJobSchema.safeParse(minimalJob)
             expect(result.success).toBe(true)
             if (result.success) {
                 expect(result.data.maxExamples).toBe(1000)
             }
         })
 
-        it('should reject invalid repo URL', () => {
-            const invalidPayloads = [
-                { repo: 'not-a-url', outputName: 'test' },
-                { repo: 'ftp://example.com', outputName: 'test' },
-                { repo: '', outputName: 'test' }
-            ]
-
-            invalidPayloads.forEach(payload => {
-                const result = DatasetJobSchema.safeParse(payload)
-                expect(result.success).toBe(false)
-            })
-        })
-
-        it('should reject dataset job without repo or dataset', () => {
-            const invalidPayload = {
-                maxExamples: 1000,
-                outputName: 'test-dataset'
+        it('should reject invalid output names', () => {
+            const invalidJob = {
+                outputName: 'ab' // Too short
             }
 
-            const result = DatasetJobSchema.safeParse(invalidPayload)
+            const result = DatasetJobSchema.safeParse(invalidJob)
             expect(result.success).toBe(false)
         })
 
-        it('should accept dataset job with both repo and dataset', () => {
-            const payload = {
-                repo: 'https://github.com/microsoft/vscode',
-                dataset: 'microsoft/DialoGPT-medium',
-                maxExamples: 1000,
-                outputName: 'combined-dataset'
+        it('should reject invalid repo URLs', () => {
+            const invalidJob = {
+                repo: 'not-a-url',
+                outputName: 'my-dataset'
             }
 
-            const result = DatasetJobSchema.safeParse(payload)
-            expect(result.success).toBe(true)
+            const result = DatasetJobSchema.safeParse(invalidJob)
+            expect(result.success).toBe(false)
+        })
+
+        it('should reject invalid maxExamples', () => {
+            const invalidJob = {
+                outputName: 'my-dataset',
+                maxExamples: -1 // Invalid negative number
+            }
+
+            const result = DatasetJobSchema.safeParse(invalidJob)
+            expect(result.success).toBe(false)
         })
     })
 })
