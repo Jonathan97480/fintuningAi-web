@@ -75,3 +75,4 @@
 
 
 
+\n\n## 9. Handoff\nPhase 1 est cloturee : l'architecture est en place, les contrats API et sequences sont figes. Phase 2 demarre (voir docs/phase2-persistence.md).
