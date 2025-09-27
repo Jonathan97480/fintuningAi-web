@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { FineTuneJobSchema, JobRecordSchema, JobEventSchema } from "shared";
+import { FineTuneJobSchema, DatasetJobSchema, JobRecordSchema, JobEventSchema } from "shared";
 import { mysqlSchema } from "../db/schema"
-import { jobQueue } from "../services/jobQueue";
+import { jobQueue, fineTuneQueue, datasetQueue } from "../services/jobQueue";
 import { db } from "../db/client";
 import { jobs, jobEvents } from "../db/schema";
 
@@ -154,8 +154,37 @@ export async function jobRoutes(app: FastifyInstance) {
       payload: parsed.data,
     });
 
-    await jobQueue.add(
+    await fineTuneQueue.add(
       "fine-tune",
+      {
+        ...parsed.data,
+        userId,
+      },
+      { jobId }
+    );
+
+    return reply.status(202).send({ jobId });
+  });
+
+  app.post("/jobs/dataset", async (request, reply) => {
+    const parsed = DatasetJobSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ errors: parsed.error.flatten().fieldErrors });
+    }
+
+    const userId = request.user?.id ?? "anonymous";
+    const jobId = randomUUID();
+
+    await (db as any).insert(jobs).values({
+      id: jobId,
+      userId,
+      type: "dataset",
+      status: "pending",
+      payload: parsed.data,
+    });
+
+    await datasetQueue.add(
+      "dataset",
       {
         ...parsed.data,
         userId,

@@ -22,6 +22,15 @@ export const FineTuneJobSchema = z.object({
 
 export type FineTuneJobInput = z.infer<typeof FineTuneJobSchema>;
 
+export const DatasetJobSchema = z.object({
+  repo: z.string().url().optional(),
+  dataset: z.string().optional(),
+  maxExamples: z.number().int().positive().default(1000),
+  outputName: z.string().min(3),
+});
+
+export type DatasetJobInput = z.infer<typeof DatasetJobSchema>;
+
 export const JobRecordSchema = z.object({
   id: z.string(),
   userId: z.string().nullable().optional(),
