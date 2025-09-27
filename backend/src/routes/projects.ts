@@ -9,13 +9,6 @@ const projectCreateSchema = z.object({
   description: z.string().optional(),
 });
 
-const datasetCreateSchema = z.object({
-  projectId: z.string(),
-  name: z.string().min(3),
-  hfId: z.string().optional(),
-  description: z.string().optional(),
-});
-
 export async function projectRoutes(app: FastifyInstance) {
   app.get("/projects", async () => {
     const projects = await db.select().from(schema.projects).limit(100);
@@ -52,21 +45,5 @@ export async function projectRoutes(app: FastifyInstance) {
       .where(eq(schema.datasets.projectId, id));
 
     return { ...project, datasets };
-  });
-
-  app.post("/datasets", async (request, reply) => {
-    const parsed = datasetCreateSchema.safeParse(request.body);
-    if (!parsed.success) return reply.status(400).send(parsed.error.flatten());
-
-    const datasetId = nanoid();
-    await db.insert(schema.datasets).values({
-      id: datasetId,
-      projectId: parsed.data.projectId,
-      name: parsed.data.name,
-      hfId: parsed.data.hfId,
-      description: parsed.data.description,
-    });
-
-    return reply.status(201).send({ id: datasetId, ...parsed.data });
   });
 }
