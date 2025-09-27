@@ -13,18 +13,19 @@ const app = Fastify({
     transport:
       process.env.NODE_ENV !== "production"
         ? {
-            target: "pino-pretty",
-            options: {
-              colorize: true,
-              translateTime: "SYS:standard",
-            },
-          }
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            translateTime: "SYS:standard",
+          },
+        }
         : undefined,
   },
 });
 
 app.register(cors, {
   origin: true,
+  credentials: true,
 });
 
 app.register(authPlugin);

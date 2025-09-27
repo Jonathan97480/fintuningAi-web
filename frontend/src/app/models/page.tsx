@@ -1,7 +1,7 @@
-\"use client\";
+"use client";
 
-import { useMemo, useState } from \"react\";
-import { useListModelsQuery } from \"@/lib/api/base\";
+import { useMemo, useState } from "react";
+import { useListModelsQuery } from "@/lib/api/base";
 
 export default function ModelsPage() {
   const [task, setTask] = useState<string>("");

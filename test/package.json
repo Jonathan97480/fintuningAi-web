@@ -1,0 +1,19 @@
+{
+  "name": "fintuningai-web-tests",
+  "private": true,
+  "scripts": {
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.6.0",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "backend": "file:../backend",
+    "shared": "file:../shared",
+    "fastify": "^4.26.0",
+    "better-sqlite3": "^9.4.3"
+  }
+}

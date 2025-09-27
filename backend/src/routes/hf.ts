@@ -25,42 +25,38 @@ const datasetQuerySchema = z.object({
 });
 
 export async function hfRoutes(app: FastifyInstance) {
-  app.get("/projects", async () => {
-    return db.select().from(schema.projects).limit(100);
-  });
-
   app.get("/hf/models", async (request, reply) => {
     const parsed = modelQuerySchema.safeParse(request.query);
     if (!parsed.success) {
-      return reply.status(400).send({ errors: parsed.error.flatten().fieldErrors });
+      return reply.status(400).send({ errors: z.treeifyError(parsed.error) });
     }
 
     const { page, pageSize } = parsed.data;
     const offset = (page - 1) * pageSize;
 
-    const models = await db
+    const models = await (db as any)
       .select()
       .from(schema.hfModels)
       .limit(pageSize)
       .offset(offset);
 
     const results = models.length
-      ? models.map((model) => ({
-          id: model.id,
-          name: model.name,
-          task: model.task,
-          license: model.license ?? "--",
-          quantization: model.quantization ?? [],
-          updatedAt: new Date(model.lastSeenAt ?? Date.now()).toISOString(),
-        }))
+      ? models.map((model: typeof schema.hfModels.$inferSelect) => ({
+        id: model.id,
+        name: model.name,
+        task: model.task,
+        license: model.license ?? "--",
+        quantization: model.quantization ?? [],
+        updatedAt: new Date(model.lastSeenAt ?? Date.now()).toISOString(),
+      }))
       : Array.from({ length: pageSize }).map((_, index) => ({
-          id: `model-${page}-${index}`,
-          name: `Demo HF Model ${page}-${index}`,
-          task: parsed.data.task ?? "text-generation",
-          license: parsed.data.license ?? "apache-2.0",
-          quantization: ["fp16", "nf4"],
-          updatedAt: new Date().toISOString(),
-        }));
+        id: `model-${page}-${index}`,
+        name: `Demo HF Model ${page}-${index}`,
+        task: parsed.data.task ?? "text-generation",
+        license: parsed.data.license ?? "apache-2.0",
+        quantization: ["fp16", "nf4"],
+        updatedAt: new Date().toISOString(),
+      }));
 
     return {
       page,
@@ -73,7 +69,7 @@ export async function hfRoutes(app: FastifyInstance) {
   app.get("/hf/datasets/search", async (request, reply) => {
     const parsed = datasetQuerySchema.safeParse(request.query);
     if (!parsed.success) {
-      return reply.status(400).send({ errors: parsed.error.flatten().fieldErrors });
+      return reply.status(400).send({ errors: z.treeifyError(parsed.error) });
     }
 
     const results = Array.from({ length: 10 }).map((_, index) => ({
@@ -92,7 +88,7 @@ export async function hfRoutes(app: FastifyInstance) {
 
   app.get("/hf/datasets/presets", async (request) => {
     if (!request.user?.id) return [];
-    return db
+    return (db as any)
       .select()
       .from(schema.datasetPresets)
       .where(eq(schema.datasetPresets.userId, request.user.id));
@@ -101,10 +97,10 @@ export async function hfRoutes(app: FastifyInstance) {
   app.post("/hf/datasets/presets", async (request, reply) => {
     const parsed = DatasetSearchPresetSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ errors: parsed.error.flatten().fieldErrors });
+      return reply.status(400).send({ errors: z.treeifyError(parsed.error) });
     }
 
-    const insertResult = await db
+    const insertResult = await (db as any)
       .insert(schema.datasetPresets)
       .values({
         userId: request.user?.id ?? null,

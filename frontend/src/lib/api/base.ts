@@ -35,11 +35,11 @@ export const api = createApi({
       providesTags: ["Health"],
     }),
     listModels: build.query<{ results: ModelRecord[] }, { task?: string } | void>({
-      query: (params) => ({ url: "/hf/models", params }),
+      query: (params) => ({ url: "/hf/models", params: params || undefined }),
       providesTags: ["Models"],
     }),
     searchDatasets: build.query<{ results: DatasetSearchResult[] }, { q?: string; task?: string; license?: string } | void>({
-      query: (params) => ({ url: "/hf/datasets/search", params }),
+      query: (params) => ({ url: "/hf/datasets/search", params: params || undefined }),
       providesTags: ["Datasets"],
     }),
     listProjects: build.query<ProjectRecord[], void>({

@@ -1,12 +1,26 @@
 import { FastifyInstance } from "fastify";
+import { z } from "zod";
 import { FineTuneJobSchema, JobRecordSchema, JobEventSchema } from "shared";
+import { mysqlSchema } from "../db/schema"
 import { jobQueue } from "../services/jobQueue";
-import { db, schema } from "../db/client";
+import { db } from "../db/client";
+import { jobs, jobEvents } from "../db/schema";
+
 import { desc, eq, gt, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
+export const schema = mysqlSchema
 
-type JobRow = typeof schema.jobs.;
-type JobEventRow = typeof schema.jobEvents.;
+type JobRow = {
+  id: string;
+  userId: string;
+  type: string;
+  status: string;
+  payload: unknown;
+  createdAt: Date | string | number;
+  updatedAt: Date | string | number;
+  progress: number | null;
+};
+type JobEventRow = z.infer<typeof JobEventSchema>;
 
 const toIso = (value: unknown) => {
   if (value instanceof Date) return value.toISOString();
@@ -42,13 +56,13 @@ const serializeEvent = (row: JobEventRow) =>
 
 export async function jobRoutes(app: FastifyInstance) {
   app.get("/jobs", async () => {
-    const rows = await db.select().from(schema.jobs).orderBy(desc(schema.jobs.createdAt)).limit(50);
+    const rows = await (db as any).select().from(jobs).orderBy(desc(jobs.createdAt)).limit(50);
     return rows.map(serializeJob);
   });
 
   app.get("/jobs/:jobId", async (request, reply) => {
     const { jobId } = request.params as { jobId: string };
-    const [row] = await db.select().from(schema.jobs).where(eq(schema.jobs.id, jobId)).limit(1);
+    const [row] = await (db as any).select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
     if (!row) {
       return reply.status(404).send({ message: "Job introuvable" });
     }
@@ -57,11 +71,11 @@ export async function jobRoutes(app: FastifyInstance) {
 
   app.get("/jobs/:jobId/events", async (request, reply) => {
     const { jobId } = request.params as { jobId: string };
-    const rows = await db
+    const rows = await (db as any)
       .select()
-      .from(schema.jobEvents)
-      .where(eq(schema.jobEvents.jobId, jobId))
-      .orderBy(desc(schema.jobEvents.id))
+      .from(jobEvents)
+      .where(eq(jobEvents.jobId, jobId))
+      .orderBy(desc(jobEvents.id))
       .limit(100);
     return rows.map(serializeEvent);
   });
@@ -81,9 +95,9 @@ export async function jobRoutes(app: FastifyInstance) {
     let running = false;
 
     const sendEvent = (event: string, data: unknown, id?: number) => {
-      reply.raw.write(vent: \n);
-      if (id != null) reply.raw.write(id: \n);
-      reply.raw.write(data: \n\n);
+      reply.raw.write(`event: ${event}\n`);
+      if (id != null) reply.raw.write(`id: ${id}\n`);
+      reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
     };
 
     const interval = setInterval(async () => {
@@ -91,17 +105,17 @@ export async function jobRoutes(app: FastifyInstance) {
       running = true;
       try {
         const condition = lastId
-          ? and(eq(schema.jobEvents.jobId, jobId), gt(schema.jobEvents.id, lastId))
-          : eq(schema.jobEvents.jobId, jobId);
+          ? and(eq(jobEvents.jobId, jobId), gt(jobEvents.id, lastId))
+          : eq(jobEvents.jobId, jobId);
 
-        const rows = await db
+        const rows = await (db as any)
           .select()
-          .from(schema.jobEvents)
+          .from(jobEvents as any)
           .where(condition)
-          .orderBy(schema.jobEvents.id)
+          .orderBy(jobEvents.id)
           .limit(25);
 
-        rows.forEach((row) => {
+        rows.forEach((row: JobEventRow) => {
           lastId = row.id;
           const event = serializeEvent(row);
           sendEvent("job.event", event, event.id);
@@ -132,7 +146,7 @@ export async function jobRoutes(app: FastifyInstance) {
     const userId = request.user?.id ?? "anonymous";
     const jobId = randomUUID();
 
-    await db.insert(schema.jobs).values({
+    await (db as any).insert(jobs).values({
       id: jobId,
       userId,
       type: "fine-tune",

@@ -1,7 +1,7 @@
-\"use client\";
+"use client";
 
-import { FormEvent, useMemo, useState } from \"react\";
-import { useSearchDatasetsQuery } from \"@/lib/api/base\";
+import { FormEvent, useMemo, useState } from "react";
+import { useSearchDatasetsQuery } from "@/lib/api/base";
 
 interface SearchState {
   q: string;

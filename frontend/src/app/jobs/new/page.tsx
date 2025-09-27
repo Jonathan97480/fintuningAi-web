@@ -1,10 +1,10 @@
-\"use client\";
+"use client";
 
-import { useState } from \"react\";
-import { useRouter } from \"next/navigation\";
-import { z } from \"zod\";
-import { useCreateFineTuneJobMutation } from \"@/lib/api/base\";
-import type { FineTuneJobInput } from \"shared\";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { z } from "zod";
+import { useCreateFineTuneJobMutation } from "@/lib/api/base";
+import type { FineTuneJobInput } from "shared";
 
 const formSchema = z.object({
   outputName: z.string().min(3, "Nom trop court"),
@@ -47,7 +47,7 @@ export default function NewJobPage() {
     const parsed = formSchema.safeParse(form);
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
-      Object.entries(parsed.error.formErrors.fieldErrors).forEach(([key, [first]]) => {
+      Object.entries(parsed.error.flatten().fieldErrors).forEach(([key, [first]]) => {
         if (first) fieldErrors[key] = first;
       });
       setErrors(fieldErrors);
@@ -55,10 +55,10 @@ export default function NewJobPage() {
     }
 
     try {
-      const result = await createJob(parsed.data).unwrap();
+      await createJob(parsed.data).unwrap();
       setMessage("Job cree avec succes");
       setErrors({});
-      router.push(/jobs/);
+      router.push("/jobs/");
     } catch (error) {
       setMessage((error as Error).message ?? "Erreur lors de la creation du job");
     }
@@ -100,7 +100,7 @@ export default function NewJobPage() {
         </label>
 
         <label>
-          <span>Nombre d'exemples</span>
+          <span>Nombre d&apos;exemples</span>
           <input
             type="number"
             min={1}

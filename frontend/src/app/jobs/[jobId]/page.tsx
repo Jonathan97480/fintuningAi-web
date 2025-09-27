@@ -1,17 +1,17 @@
-\"use client\";
+"use client";
 
-import Link from \"next/link\";
-import { useParams } from \"next/navigation\";
-import { useEffect, useMemo, useState } from \"react\";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
   useGetJobQuery,
   useListJobEventsQuery,
-} from \"@/lib/api/base\";
-import { statusLabels } from \"../statusLabels\";
-import type { JobEvent } from \"shared\";
+} from "@/lib/api/base";
+import { statusLabels } from "../statusLabels";
+import type { JobEvent } from "shared";
 
 const formatDate = (value?: string) => {
-  if (!value) return \"-\";
+  if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString();
@@ -25,7 +25,7 @@ export default function JobDetailPage() {
 
   useEffect(() => {
     const base = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:4000";
-    const source = new EventSource(${base}/jobs//events/stream);
+    const source = new EventSource(`${base}/jobs/${jobId}/events/stream`);
 
     const listener = (event: Event) => {
       const message = event as MessageEvent<string>;
@@ -66,10 +66,10 @@ export default function JobDetailPage() {
       <header className="page-header">
         <div>
           <p className="badge">Job {jobId}</p>
-          <h1>{job?.payload?.outputName ?? jobId}</h1>
+          <h1>{String(job?.payload?.outputName || jobId)}</h1>
           <p className="text-muted">
             Statut:
-            <span className={status-pill status-}>
+            <span className={`status-pill status-${job?.status ?? "unknown"}`}>
               {job ? statusLabels[job.status] : "..."}
             </span>
           </p>
@@ -84,15 +84,15 @@ export default function JobDetailPage() {
         <dl>
           <div>
             <dt>Modele</dt>
-            <dd>{job?.payload?.baseModelId ?? "-"}</dd>
+            <dd>{job?.payload?.baseModelId ? JSON.stringify(job?.payload?.baseModelId) : "-"}</dd>
           </div>
           <div>
             <dt>Dataset</dt>
-            <dd>{job?.payload?.datasetId ?? "-"}</dd>
+            <dd>{job?.payload?.datasetId ? JSON.stringify(job?.payload?.datasetId) : "-"}</dd>
           </div>
           <div>
             <dt>Progression</dt>
-            <dd>{job?.progress != null ? ${Math.round(job.progress)}% : "-"}</dd>
+            <dd>{job?.progress != null ? `${Math.round(job.progress)}%` : "-"}</dd>
           </div>
           <div>
             <dt>Derniere mise a jour</dt>
@@ -119,12 +119,12 @@ export default function JobDetailPage() {
         <ul>
           {events.map((event) => (
             <li key={event.id}>
-              <span className={vent-level level-}>{event.level}</span>
+              <span className={`event-level level-${event.level}`}>{event.level}</span>
               <span>{event.message}</span>
               <time>{formatDate(event.createdAt)}</time>
             </li>
           ))}
-          {events.length === 0 && <li className="text-muted">En attente d'activite.</li>}
+          {events.length === 0 && <li className="text-muted">En attente d&apos;activite.</li>}
         </ul>
       </section>
     </div>

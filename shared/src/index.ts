@@ -28,7 +28,7 @@ export const JobRecordSchema = z.object({
   type: z.string(),
   status: JobStatusEnum,
   progress: z.number().nullable().optional(),
-  payload: z.record(z.any()).nullable().optional(),
+  payload: z.object({}).catchall(z.unknown()).nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

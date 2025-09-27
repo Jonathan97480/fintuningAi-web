@@ -1,11 +1,11 @@
-\"use client\";
+"use client";
 
-import Link from \"next/link\";
-import { useListJobsQuery } from \"@/lib/api/base\";
-import { statusLabels } from \"./statusLabels\";
+import Link from "next/link";
+import { useListJobsQuery } from "@/lib/api/base";
+import { statusLabels } from "./statusLabels";
 
 const formatDate = (value?: string) => {
-  if (!value) return \"-\";
+  if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString();
@@ -57,16 +57,16 @@ export default function JobsPage() {
             {jobs?.map((job) => (
               <tr key={job.id}>
                 <td>
-                  <Link href={/jobs/}>{job.payload?.outputName ?? job.id}</Link>
+                  <Link href={`/jobs/${job.id}`}>{String(job.payload?.outputName ?? job.id)}</Link>
                 </td>
-                <td>{job.payload?.baseModelId ?? \"-\"}</td>
-                <td>{job.payload?.datasetId ?? \"-\"}</td>
+                <td>{(job.payload?.baseModelId as { name?: string })?.name ?? "-"}</td>
+                <td>{(job.payload?.datasetId as { name?: string })?.name ?? "-"}</td>
                 <td>
-                  <span className={status-pill status-}>
+                  <span className={`status-pill status-${job.status}`}>
                     {statusLabels[job.status]}
                   </span>
                 </td>
-                <td>{job.progress != null ? ${Math.round(job.progress)}% : \"-\"}</td>
+                <td>{job.progress != null ? `${Math.round(job.progress)}%` : "-"}</td>
                 <td>{formatDate(job.updatedAt)}</td>
               </tr>
             ))}

@@ -14,19 +14,19 @@ let mysqlPool: mysql.Pool | undefined;
 
 export const db = env.DB_DIALECT === "mysql"
   ? (() => {
-      mysqlPool = mysql.createPool({
-        host: env.MYSQL_HOST,
-        port: env.MYSQL_PORT,
-        user: env.MYSQL_USER,
-        password: env.MYSQL_PASSWORD,
-        database: env.MYSQL_DATABASE,
-      });
-      return drizzleMysql(mysqlPool, { schema: mysqlSchema });
-    })()
+    mysqlPool = mysql.createPool({
+      host: env.MYSQL_HOST,
+      port: env.MYSQL_PORT,
+      user: env.MYSQL_USER,
+      password: env.MYSQL_PASSWORD,
+      database: env.MYSQL_DATABASE,
+    });
+    return drizzleMysql(mysqlPool, { schema: mysqlSchema, mode: "default" });
+  })()
   : (() => {
-      sqliteDb = new Database(env.DB_PATH, { verbose });
-      return drizzleSqlite(sqliteDb, { schema: sqliteSchema });
-    })();
+    sqliteDb = new Database(env.DB_PATH, { verbose });
+    return drizzleSqlite(sqliteDb, { schema: sqliteSchema });
+  })();
 
 export type DbClient = typeof db;
 

@@ -1,7 +1,7 @@
-import { Queue } from \"bullmq\";
-import { env } from \"../config/env\";
+import { Queue } from "bullmq";
+import { env } from "../config/env";
 
-export const jobQueue = new Queue(\"jobs\", {
+export const jobQueue = new Queue("jobs", {
   connection: { url: env.REDIS_URL },
   defaultJobOptions: {
     removeOnComplete: 100,

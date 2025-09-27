@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { useGetHealthQuery, useListModelsQuery } from "@/lib/api/base";
 import { useMemo } from "react";
