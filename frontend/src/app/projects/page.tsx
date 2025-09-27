@@ -1,7 +1,7 @@
 "use client";
 
 import type { DatasetRecord, ProjectRecord } from "shared";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import {
   useListProjectsQuery,
   useCreateProjectMutation,
@@ -20,6 +20,11 @@ export default function ProjectsPage() {
   const [projectForm, setProjectForm] = useState(defaultProject);
   const [datasetForms, setDatasetForms] = useState<Record<string, { name: string; hfId: string }>>({});
   const [message, setMessage] = useState<string | null>(null);
+
+  const enrichedProjects = useMemo(
+    () => (projects ?? []) as (ProjectRecord & { datasets?: DatasetRecord[] })[],
+    [projects]
+  );
 
   const handleProjectSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -93,9 +98,9 @@ export default function ProjectsPage() {
       </section>
 
       <section className="projects-grid">
-        {(projects ?? []).map((project) => {
+        {enrichedProjects.map((project) => {
           const datasetForm = datasetForms[project.id] ?? { name: "", hfId: "" };
-          const datasets = (project as ProjectRecord & { datasets?: DatasetRecord[] }).datasets ?? [];
+          const datasets = project.datasets ?? [];
           return (
             <article key={project.id} className="glow-panel project-card">
               <header>
