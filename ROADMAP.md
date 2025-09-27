@@ -34,6 +34,7 @@
 - Add base CRUD endpoints for projects, datasets, jobs (without Python orchestration yet) with SQLite integration.
 
 ## Phase 4 - Python Integration
+**Status:** In Progress 🔄 (see docs/phase4-python-integration.md).
 - Refactor Python scripts into reusable modules callable via CLI or programmatic entry points; ensure structured JSON output and consistent exit codes.
 - Implement job runner in Node: queue management, spawning Python, streaming stdout/stderr, capturing metrics/logs in SQLite.
 - Handle Hugging Face interactions (model/dataset download/upload, caching) with retry/backoff and token injection.
