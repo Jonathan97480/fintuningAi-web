@@ -1,10 +1,14 @@
-import { FastifyInstance } from \"fastify\";
-import { FineTuneJobSchema, JobRecordSchema, JobEventSchema } from \"shared\";
-import { jobQueue } from \"../services/jobQueue\";
-import { db } from \"../db/client\";
-import { jobs, jobEvents } from \"../db/schema\";
-import { desc, eq, gt, and } from \"drizzle-orm\";
-import { randomUUID } from \"crypto\";
+import { FastifyInstance } from "fastify";
+import { FineTuneJobSchema, JobRecordSchema, JobEventSchema } from "shared";
+import { jobQueue } from "../services/jobQueue";
+import { db, schema } from "../db/client";
+import { desc, eq, gt, and } from "drizzle-orm";
+import { randomUUID } from "crypto";
+
+type JobRow = typeof schema.jobs.;
+type JobEventRow = typeof schema.jobEvents.;
+
+type SerializedEvent = ReturnType<typeof serializeEvent>;
 
 const toIso = (value: unknown) => {
   if (value instanceof Date) return value.toISOString();
@@ -16,8 +20,13 @@ const toIso = (value: unknown) => {
   return new Date().toISOString();
 };
 
-const serializeJob = (row: typeof jobs.) => {
-  const payload = row.payload ? (typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload) : null;
+const serializeJob = (row: JobRow) => {
+  const payload = row.payload
+    ? typeof row.payload === "string"
+      ? JSON.parse(row.payload)
+      : row.payload
+    : null;
+
   return JobRecordSchema.parse({
     ...row,
     payload,
@@ -27,23 +36,21 @@ const serializeJob = (row: typeof jobs.) => {
   });
 };
 
-const serializeEvents = (rows: typeof jobEvents.[]) =>
-  rows.map((event) =>
-    JobEventSchema.parse({
-      ...event,
-      createdAt: toIso(event.createdAt),
-    })
-  );
+const serializeEvent = (row: JobEventRow) =>
+  JobEventSchema.parse({
+    ...row,
+    createdAt: toIso(row.createdAt),
+  });
 
 export async function jobRoutes(app: FastifyInstance) {
   app.get("/jobs", async () => {
-    const rows = await db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(50);
+    const rows = await db.select().from(schema.jobs).orderBy(desc(schema.jobs.createdAt)).limit(50);
     return rows.map(serializeJob);
   });
 
   app.get("/jobs/:jobId", async (request, reply) => {
     const { jobId } = request.params as { jobId: string };
-    const [row] = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
+    const [row] = await db.select().from(schema.jobs).where(eq(schema.jobs.id, jobId)).limit(1);
     if (!row) {
       return reply.status(404).send({ message: "Job introuvable" });
     }
@@ -54,11 +61,11 @@ export async function jobRoutes(app: FastifyInstance) {
     const { jobId } = request.params as { jobId: string };
     const rows = await db
       .select()
-      .from(jobEvents)
-      .where(eq(jobEvents.jobId, jobId))
-      .orderBy(desc(jobEvents.id))
+      .from(schema.jobEvents)
+      .where(eq(schema.jobEvents.jobId, jobId))
+      .orderBy(desc(schema.jobEvents.id))
       .limit(100);
-    return serializeEvents(rows);
+    return rows.map(serializeEvent);
   });
 
   app.get("/jobs/:jobId/events/stream", async (request, reply) => {
@@ -86,21 +93,22 @@ export async function jobRoutes(app: FastifyInstance) {
       running = true;
       try {
         const condition = lastId
-          ? and(eq(jobEvents.jobId, jobId), gt(jobEvents.id, lastId))
-          : eq(jobEvents.jobId, jobId);
+          ? and(eq(schema.jobEvents.jobId, jobId), gt(schema.jobEvents.id, lastId))
+          : eq(schema.jobEvents.jobId, jobId);
 
         const rows = await db
           .select()
-          .from(jobEvents)
+          .from(schema.jobEvents)
           .where(condition)
-          .orderBy(jobEvents.id)
+          .orderBy(schema.jobEvents.id)
           .limit(25);
 
-        for (const row of rows) {
+        rows.forEach((row) => {
           lastId = row.id;
-          const event = JobEventSchema.parse({ ...row, createdAt: toIso(row.createdAt) });
+          const event = serializeEvent(row);
           sendEvent("job.event", event, event.id);
-        }
+        });
+
         sendEvent("heartbeat", { ok: true });
       } catch (error) {
         sendEvent("error", { message: (error as Error).message });
@@ -126,7 +134,7 @@ export async function jobRoutes(app: FastifyInstance) {
     const userId = request.user?.id ?? "anonymous";
     const jobId = randomUUID();
 
-    await db.insert(jobs).values({
+    await db.insert(schema.jobs).values({
       id: jobId,
       userId,
       type: "fine-tune",
