@@ -8,8 +8,6 @@ import { randomUUID } from "crypto";
 type JobRow = typeof schema.jobs.;
 type JobEventRow = typeof schema.jobEvents.;
 
-type SerializedEvent = ReturnType<typeof serializeEvent>;
-
 const toIso = (value: unknown) => {
   if (value instanceof Date) return value.toISOString();
   if (typeof value === "number") return new Date(value).toISOString();
