@@ -4,6 +4,7 @@ import { env } from \"./config/env\";
 import { authPlugin } from \"./plugins/auth\";
 import { healthRoutes } from \"./routes/health\";
 import { jobRoutes } from \"./routes/jobs\";
+import { hfRoutes } from \"./routes/hf\";
 
 const app = Fastify({
   logger: {
@@ -28,6 +29,7 @@ app.register(cors, {
 app.register(authPlugin);
 app.register(healthRoutes);
 app.register(jobRoutes);
+app.register(hfRoutes);
 
 export async function start() {
   try {

@@ -1,19 +1,10 @@
 import { FastifyInstance } from \"fastify\";
-import { z } from \"zod\";
+import { FineTuneJobSchema } from \"shared\";
 import { jobQueue } from \"../services/jobQueue\";
-
-const createJobSchema = z.object({
-  outputName: z.string().min(3),
-  baseModelId: z.string(),
-  datasetId: z.string(),
-  numExamples: z.number().int().positive(),
-  maxSteps: z.number().int().positive(),
-  quantizations: z.array(z.string()).default([\"fp16\"]),
-});
 
 export async function jobRoutes(app: FastifyInstance) {
   app.post(\"/jobs/fine-tune\", async (request, reply) => {
-    const parsed = createJobSchema.safeParse(request.body);
+    const parsed = FineTuneJobSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ errors: parsed.error.flatten().fieldErrors });
     }

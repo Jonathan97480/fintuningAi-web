@@ -1,4 +1,8 @@
+\"use client\";
+
 import Link from \"next/link\";
+import { useGetHealthQuery, useListModelsQuery } from \"@/lib/api/base\";
+import { useMemo } from \"react\";
 
 const quickLinks = [
   { label: \"Lancer un fine-tuning\", href: \"/jobs/new\" },
@@ -8,6 +12,11 @@ const quickLinks = [
 ];
 
 export default function Home() {
+  const { data: health } = useGetHealthQuery();
+  const { data: models } = useListModelsQuery({ task: "text-generation" });
+
+  const featuredModels = useMemo(() => models?.results.slice(0, 3) ?? [], [models]);
+
   return (
     <div className="landing">
       <section className="hero glow-panel">
@@ -38,9 +47,9 @@ export default function Home() {
 
       <section className="status-panels">
         <article className="glow-panel status-card">
-          <h2>Workers actifs</h2>
-          <p className="status-value">3</p>
-          <p className="text-muted">Monitoring temps reel a venir</p>
+          <h2>Status API</h2>
+          <p className="status-value">{health?.status ?? "..."}</p>
+          <p className="text-muted">{health?.timestamp ? new Date(health.timestamp).toLocaleString() : "en attente de reponse"}</p>
         </article>
         <article className="glow-panel status-card">
           <h2>Jobs en file</h2>
@@ -48,9 +57,16 @@ export default function Home() {
           <p className="text-muted">Interface de suivi en cours de conception</p>
         </article>
         <article className="glow-panel status-card">
-          <h2>Derniere synchro HF</h2>
-          <p className="status-value">Planifiee</p>
-          <p className="text-muted">Les scripts seront connectes en Phase 2</p>
+          <h2>Modeles mis en avant</h2>
+          <ul className="model-list">
+            {featuredModels.map((model) => (
+              <li key={model.id}>
+                <span>{model.name}</span>
+                <small>{model.task}</small>
+              </li>
+            ))}
+            {featuredModels.length === 0 && <li className="text-muted">Chargement...</li>}
+          </ul>
         </article>
       </section>
     </div>

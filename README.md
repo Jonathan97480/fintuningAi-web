@@ -53,3 +53,5 @@ Consulter `ROADMAP.md` pour la sequence complete des phases (decouverte, archite
 
 ## Docker (aperçu)
 Un compose de developpement est disponible dans `ops/docker-compose.yml` avec des Dockerfile dedies pour chaque service.
+### Synchronisation du package shared
+Avant de lancer le backend, exécuter `npm run build --workspace shared` afin de générer les types partagés consommés par Fastify.
