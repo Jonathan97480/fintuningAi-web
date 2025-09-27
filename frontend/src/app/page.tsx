@@ -1,14 +1,14 @@
-\"use client\";
+"use client";
 
-import Link from \"next/link\";
-import { useGetHealthQuery, useListModelsQuery } from \"@/lib/api/base\";
-import { useMemo } from \"react\";
+import Link from "next/link";
+import { useGetHealthQuery, useListModelsQuery } from "@/lib/api/base";
+import { useMemo } from "react";
 
 const quickLinks = [
-  { label: \"Lancer un fine-tuning\", href: \"/jobs/new\" },
-  { label: \"Parcourir les datasets\", href: \"/datasets\" },
-  { label: \"Catalogue modeles\", href: \"/models\" },
-  { label: \"Historique des jobs\", href: \"/jobs\" },
+  { label: "Lancer un fine-tuning", href: "/jobs/new" },
+  { label: "Parcourir les datasets", href: "/datasets" },
+  { label: "Catalogue modeles", href: "/models" },
+  { label: "Historique des jobs", href: "/jobs" },
 ];
 
 export default function Home() {
