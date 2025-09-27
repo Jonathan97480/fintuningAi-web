@@ -18,7 +18,12 @@ const datasetCreateSchema = z.object({
 
 export async function projectRoutes(app: FastifyInstance) {
   app.get("/projects", async () => {
-    return db.select().from(schema.projects).limit(100);
+    const projects = await db.select().from(schema.projects).limit(100);
+    const datasets = await db.select().from(schema.datasets);
+    return projects.map((project) => ({
+      ...project,
+      datasets: datasets.filter((dataset) => dataset.projectId === project.id),
+    }));
   });
 
   app.post("/projects", async (request, reply) => {

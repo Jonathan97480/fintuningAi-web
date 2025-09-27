@@ -423,3 +423,82 @@ a {
     color: -text-primary;
   }
 }
+
+.projects-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.project-card {
+  display: grid;
+  gap: 1.2rem;
+  padding: 2rem;
+}
+
+.project-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.project-date {
+  font-size: 0.8rem;
+  color: -text-muted;
+}
+
+.dataset-inline-form {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  align-items: end;
+}
+
+.dataset-inline-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  span {
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: -text-muted;
+  }
+
+  input {
+    padding: 0.65rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(125, 77, 255, 0.25);
+    background: rgba(20, 8, 40, 0.6);
+    color: -text-primary;
+  }
+}
+
+.project-card footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.project-card footer li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.project-form form {
+  display: grid;
+  gap: 1rem;
+}
+
+.project-form textarea {
+  min-height: 100px;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 77, 255, 0.25);
+  background: rgba(20, 8, 40, 0.6);
+  color: -text-primary;
+}
