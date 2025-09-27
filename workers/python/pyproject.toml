@@ -1,0 +1,30 @@
+[tool.poetry]
+name = \"fintuning-workers\"
+version = \"0.1.0\"
+description = \"Worker orchestrations for fintuningAi\"
+authors = [\"Jonathan Team <jonathanfrt97480@gmail.com>\"]
+readme = \"README.md\"
+packages = [{ include = \"fintuning_workers\", from = \"src\" }]
+
+[tool.poetry.dependencies]
+python = \"^3.11\"
+click = \"^8.1.7\"
+python-dotenv = \"^1.0.1\"
+rich = \"^13.9.4\"
+transformers = \"^4.45.0\"
+datasets = \"^3.1.0\"
+accelerate = \"^1.3.0\"
+peft = \"^0.13.0\"
+bitsandbytes = \"^0.45.0\"
+huggingface-hub = \"^0.26.3\"
+
+[tool.poetry.group.dev.dependencies]
+pytest = \"^8.3.3\"
+ruff = \"^0.8.0\"
+
+[tool.poetry.scripts]
+fintuning-worker = \"fintuning_workers.cli:app\"
+
+[build-system]
+requires = [\"poetry-core\"]
+build-backend = \"poetry.core.masonry.api\"

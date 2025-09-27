@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../ops/dockerfiles/backend.Dockerfile
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=change-me-in-env
+      - DB_PATH=/data/fintuning.db
+    volumes:
+      - ../backend:/app
+      - ../artifacts:/data
+    ports:
+      - '4000:4000'
+    depends_on:
+      - redis
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../ops/dockerfiles/frontend.Dockerfile
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE=http://localhost:4000
+    volumes:
+      - ../frontend:/app
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+
+  worker:
+    build:
+      context: ../workers/python
+      dockerfile: ../ops/dockerfiles/worker.Dockerfile
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - HF_SERVICE_TOKEN=
+    volumes:
+      - ../workers/python:/app
+      - ../artifacts:/artifacts
+    depends_on:
+      - redis

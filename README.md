@@ -41,3 +41,15 @@ Consulter `ROADMAP.md` pour la sequence complete des phases (decouverte, archite
 
 
 
+## Installation rapide
+1. Installer les dependances frontend et backend (depuis la racine):
+   - `npm install --workspace frontend`
+   - `npm install --workspace backend`
+   - `npm install --workspace shared`
+2. Copier `ops/.env.example` vers un fichier `.env` adapte a chaque service.
+3. Lancer le backend: `npm run dev --workspace backend` (necessite Redis en local ou via `docker-compose`).
+4. Lancer le frontend: `npm run dev --workspace frontend`.
+5. Les workers Python se lancent via Poetry: `cd workers/python && poetry install` puis `poetry run fintuning-worker --help`.
+
+## Docker (aperçu)
+Un compose de developpement est disponible dans `ops/docker-compose.yml` avec des Dockerfile dedies pour chaque service.

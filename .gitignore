@@ -211,3 +211,4 @@ transformers_cache/
 # Project artifacts storage
 artifacts/
 !artifacts/.gitkeep
+node_modules/
