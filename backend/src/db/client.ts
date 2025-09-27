@@ -12,21 +12,14 @@ const verbose = process.env.NODE_ENV !== "production" ? console.log : undefined;
 let sqliteDb: Database.Database | undefined;
 let mysqlPool: mysql.Pool | undefined;
 
-export const db = env.DB_DIALECT === "mysql"
-  ? (() => {
-    mysqlPool = mysql.createPool({
-      host: env.MYSQL_HOST,
-      port: env.MYSQL_PORT,
-      user: env.MYSQL_USER,
-      password: env.MYSQL_PASSWORD,
-      database: env.MYSQL_DATABASE,
-    });
-    return drizzleMysql(mysqlPool, { schema: mysqlSchema, mode: "default" });
-  })()
-  : (() => {
-    sqliteDb = new Database(env.DB_PATH, { verbose });
-    return drizzleSqlite(sqliteDb, { schema: sqliteSchema });
-  })();
+// SQLite-specific client for type safety
+export const sqliteClient = (() => {
+  const db = new Database(env.DB_PATH, { verbose });
+  return drizzleSqlite(db, { schema: sqliteSchema });
+})();
+
+// Use SQLite client by default (can be extended for MySQL later)
+export const db = sqliteClient;
 
 // Helper functions for date conversion
 export const dateToUnix = (date: Date): number => Math.floor(date.getTime() / 1000);

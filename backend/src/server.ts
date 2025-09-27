@@ -5,6 +5,8 @@ import { authPlugin } from "./plugins/auth";
 import { healthRoutes } from "./routes/health";
 import { jobRoutes } from "./routes/jobs";
 import { hfRoutes } from "./routes/hf";
+import { authRoutes } from "./routes/auth";
+import { datasetRoutes } from "./routes/datasets";
 import { projectRoutes } from "./routes/projects";
 
 const app = Fastify({
@@ -29,10 +31,12 @@ app.register(cors, {
 });
 
 app.register(authPlugin);
+app.register(authRoutes);
 app.register(healthRoutes);
 app.register(jobRoutes);
 app.register(hfRoutes);
 app.register(projectRoutes);
+app.register(datasetRoutes);
 
 export async function start() {
   try {

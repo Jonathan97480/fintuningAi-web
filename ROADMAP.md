@@ -14,18 +14,20 @@
 - Establish design direction: neon-futuristic dark theme (violet gradients, glow, bold typography) per provided reference.
 
 ## Phase 1 - Architecture and Environment
-**Status:** In progress (see docs/phase1-architecture.md).
+**Status:** Completed (see docs/phase1-architecture.md).
 - Split-service layout in place (`frontend/`, `backend/`, `workers/python/`) with shared schemas and BullMQ orchestration scaffolding.
 - API contracts + sequence diagrams captured in docs/phase1-api-contracts.md and docs/phase1-sequences.md (auth, HF, jobs, events).
 - Hugging Face token strategy recorded (user-provided tokens encrypted, daily sync mock implemented).
 - Document key flow sequences (fine-tuning job, daily model refresh, dataset search) for implementation hand-off.
 - Scaffold baseline project directories and ops assets (docker-compose, env templates, placeholders).
 ## Phase 2 - Persistence Layer
+**Status:** Completed (see docs/phase2-persistence.md).
 - Design SQLite schema: users, API tokens, projects, datasets (Hugging Face references plus local paths), fine-tuning jobs, job events/logs, produced models.
 - Choose migration tool or lightweight ORM for TypeScript (for example Prisma or Drizzle) and migration workflow.
 - Implement seeding strategy for demo data and default admin user.
 
 ## Phase 3 - Backend Foundations
+**Status:** Completed (see docs/phase3-backend-foundations.md).
 - Scaffold Next.js app with TypeScript, SASS modules, ESLint, Prettier.
 - Configure shared utilities (logger, error formatter, env loader, HTTP helpers).
 - Implement authentication middleware (Bearer tokens) and token issuance/rotation endpoints.
