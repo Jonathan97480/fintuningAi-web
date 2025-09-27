@@ -1,6 +1,14 @@
 import { z } from \"zod\";
 
-export const JobStatusEnum = z.enum(["pending", "queued", "running", "paused", "completed", "failed", "cancelled"]);
+export const JobStatusEnum = z.enum([
+  \"pending\",
+  \"queued\",
+  \"running\",
+  \"paused\",
+  \"completed\",
+  \"failed\",
+  \"cancelled\",
+]);
 export type JobStatus = z.infer<typeof JobStatusEnum>;
 
 export const FineTuneJobSchema = z.object({
@@ -9,10 +17,33 @@ export const FineTuneJobSchema = z.object({
   datasetId: z.string(),
   numExamples: z.number().int().positive(),
   maxSteps: z.number().int().positive(),
-  quantizations: z.array(z.string()).default(["fp16"]),
+  quantizations: z.array(z.string()).default([\"fp16\"]),
 });
 
 export type FineTuneJobInput = z.infer<typeof FineTuneJobSchema>;
+
+export const JobRecordSchema = z.object({
+  id: z.string(),
+  userId: z.string().nullable().optional(),
+  type: z.string(),
+  status: JobStatusEnum,
+  progress: z.number().nullable().optional(),
+  payload: z.record(z.any()).nullable().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type JobRecord = z.infer<typeof JobRecordSchema>;
+
+export const JobEventSchema = z.object({
+  id: z.number(),
+  jobId: z.string(),
+  level: z.string(),
+  message: z.string(),
+  createdAt: z.string(),
+});
+
+export type JobEvent = z.infer<typeof JobEventSchema>;
 
 export const DatasetSearchPresetSchema = z.object({
   name: z.string().min(2),

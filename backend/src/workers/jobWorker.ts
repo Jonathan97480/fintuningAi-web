@@ -7,7 +7,10 @@ import { sleep } from \"../utils/sleep\";
 import { JobStatus } from \"shared\";
 
 async function updateJobStatus(jobId: string, status: JobStatus, progress = 0) {
-  await db.update(jobs).set({ status, progress }).where(eq(jobs.id, jobId));
+  await db
+    .update(jobs)
+    .set({ status, progress, updatedAt: new Date() })
+    .where(eq(jobs.id, jobId));
 }
 
 async function appendEvent(jobId: string, message: string, level: string = \"info\") {

@@ -1,14 +1,44 @@
 import { FastifyInstance } from \"fastify\";
-import { FineTuneJobSchema } from \"shared\";
+import { FineTuneJobSchema, JobRecordSchema, JobEventSchema } from \"shared\";
 import { jobQueue } from \"../services/jobQueue\";
 import { db } from \"../db/client\";
 import { jobs, jobEvents } from \"../db/schema\";
-import { eq, desc } from \"drizzle-orm\";
+import { desc, eq } from \"drizzle-orm\";
 import { randomUUID } from \"crypto\";
+
+const toIso = (value: unknown) => {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "number") return new Date(value).toISOString();
+  if (typeof value === "string") {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+  }
+  return new Date().toISOString();
+};
+
+const serializeJob = (row: typeof jobs.) => {
+  const payload = row.payload ? (typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload) : null;
+  return JobRecordSchema.parse({
+    ...row,
+    payload,
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
+    progress: row.progress ?? 0,
+  });
+};
+
+const serializeEvents = (rows: typeof jobEvents.[]) =>
+  rows.map((event) =>
+    JobEventSchema.parse({
+      ...event,
+      createdAt: toIso(event.createdAt),
+    })
+  );
 
 export async function jobRoutes(app: FastifyInstance) {
   app.get(\"/jobs\", async () => {
-    return db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(50);
+    const rows = await db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(50);
+    return rows.map(serializeJob);
   });
 
   app.get(\"/jobs/:jobId\", async (request, reply) => {
@@ -17,7 +47,7 @@ export async function jobRoutes(app: FastifyInstance) {
     if (!row) {
       return reply.status(404).send({ message: \"Job introuvable\" });
     }
-    return row;
+    return serializeJob(row);
   });
 
   app.get(\"/jobs/:jobId/events\", async (request, reply) => {
@@ -28,7 +58,7 @@ export async function jobRoutes(app: FastifyInstance) {
       .where(eq(jobEvents.jobId, jobId))
       .orderBy(desc(jobEvents.id))
       .limit(100);
-    return rows;
+    return serializeEvents(rows);
   });
 
   app.post(\"/jobs/fine-tune\", async (request, reply) => {
