@@ -213,3 +213,5 @@ artifacts/
 !artifacts/.gitkeep
 node_modules/
 !frontend/src/lib/
+!frontend/src/app/datasets/
+!frontend/src/app/models/

@@ -61,3 +61,4 @@ Avant de lancer le backend, exécuter `npm run build --workspace shared` afin de
 pm run worker --workspace backend (necessite Redis).
 
 
+\n## Pages disponibles\n- / : dashboard neon (status API, modeles en avant).\n- /jobs : liste des jobs + suivi live.\n- /jobs/new : creation d'un job fine-tuning via API.\n- /datasets : recherche Hugging Face avec indicateur 🔒.\n- /models : catalogue mock synchronise quotidiennement.\n

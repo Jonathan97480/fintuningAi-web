@@ -1,6 +1,22 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { JobRecord, JobEvent, FineTuneJobInput } from "shared";
 
+type DatasetSearchResult = {
+  id: string;
+  name: string;
+  locked: boolean;
+  size: number;
+  description?: string;
+};
+
+type ModelRecord = {
+  id: string;
+  name: string;
+  task: string;
+  license?: string;
+  quantization: string[];
+};
+
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:4000";
 
 export const api = createApi({
@@ -12,14 +28,13 @@ export const api = createApi({
       query: () => "/health",
       providesTags: ["Health"],
     }),
-    listModels: build.query<
-      {
-        results: Array<{ id: string; name: string; task: string; license: string; quantization: string[] }>;
-      },
-      { task?: string } | void
-    >({
+    listModels: build.query<{ results: ModelRecord[] }, { task?: string } | void>({
       query: (params) => ({ url: "/hf/models", params }),
       providesTags: ["Models"],
+    }),
+    searchDatasets: build.query<{ results: DatasetSearchResult[] }, { q?: string; task?: string; license?: string } | void>({
+      query: (params) => ({ url: "/hf/datasets/search", params }),
+      providesTags: ["Datasets"],
     }),
     listJobs: build.query<JobRecord[], void>({
       query: () => "/jobs",
@@ -43,6 +58,7 @@ export const api = createApi({
 export const {
   useGetHealthQuery,
   useListModelsQuery,
+  useSearchDatasetsQuery,
   useListJobsQuery,
   useGetJobQuery,
   useListJobEventsQuery,
