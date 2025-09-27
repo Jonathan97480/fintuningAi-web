@@ -25,6 +25,10 @@ const datasetQuerySchema = z.object({
 });
 
 export async function hfRoutes(app: FastifyInstance) {
+  app.get("/projects", async () => {
+    return db.select().from(schema.projects).limit(100);
+  });
+
   app.get("/hf/models", async (request, reply) => {
     const parsed = modelQuerySchema.safeParse(request.query);
     if (!parsed.success) {
@@ -77,7 +81,7 @@ export async function hfRoutes(app: FastifyInstance) {
       name: `Dataset demo ${index}`,
       locked: index % 3 === 0 && !request.user?.id,
       size: 4096 * (index + 1),
-      description: "Resultat de recherche factice en attendant l'integration Hugging Face.",
+      description: "Resultat de recherche factice en attendant l'intégration Hugging Face.",
     }));
 
     return {
