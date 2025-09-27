@@ -299,3 +299,39 @@ a {
   gap: 1rem;
   font-size: 0.9rem;
 }
+
+.job-form {
+  display: grid;
+  gap: 1.5rem;
+  padding: 2rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+
+    span {
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: -text-muted;
+    }
+
+    input {
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(125, 77, 255, 0.2);
+      background: rgba(20, 8, 40, 0.65);
+      color: -text-primary;
+    }
+
+    .error {
+      color: rgba(231, 76, 60, 0.85);
+      font-size: 0.75rem;
+    }
+  }
+
+  .form-message {
+    color: -text-muted;
+  }
+}

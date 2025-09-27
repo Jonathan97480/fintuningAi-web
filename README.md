@@ -60,3 +60,4 @@ Avant de lancer le backend, exécuter `npm run build --workspace shared` afin de
 - Lancer le consumer BullMQ : 
 pm run worker --workspace backend (necessite Redis).
 
+

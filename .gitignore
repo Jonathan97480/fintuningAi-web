@@ -212,3 +212,4 @@ transformers_cache/
 artifacts/
 !artifacts/.gitkeep
 node_modules/
+!frontend/src/lib/
