@@ -1,51 +1,75 @@
-import { sqliteTable, text, integer, real, blob } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, blob, check } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
-  email: text("email").notNull().unique(),
+  email: text("email", { length: 255 }).notNull().unique(),
   roles: blob("roles", { mode: "json" }).$type<string[]>().notNull(),
-  displayName: text("display_name"),
+  displayName: text("display_name", { length: 100 }),
   passwordHash: text("password_hash"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-});
+}, (table) => [
+  // Email validation constraint
+  check("email_format", sql`email LIKE '%@%' AND LENGTH(email) >= 5`),
+  // Display name length constraint
+  check("display_name_length", sql`display_name IS NULL OR LENGTH(display_name) <= 100`),
+]);
 
 export const apiTokens = sqliteTable("api_tokens", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  label: text("label"),
+  label: text("label", { length: 100 }),
   hash: text("hash").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
   lastUsedAt: integer("last_used_at", { mode: "timestamp" }),
   expiresAt: integer("expires_at", { mode: "timestamp" }),
-});
+}, (table) => [
+  // Label length constraint
+  check("label_length", sql`label IS NULL OR LENGTH(label) <= 100`),
+  // Hash format constraint (assuming SHA-256)
+  check("hash_format", sql`LENGTH(hash) = 64 OR hash = 'hash-placeholder'`),
+]);
 
 export const projects = sqliteTable("projects", {
   id: text("id").primaryKey(),
   ownerId: text("owner_id").references(() => users.id, { onDelete: "set null" }),
-  name: text("name").notNull(),
-  description: text("description"),
+  name: text("name", { length: 200 }).notNull(),
+  description: text("description", { length: 1000 }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-});
+}, (table) => [
+  // Name constraints
+  check("name_not_empty", sql`LENGTH(TRIM(name)) > 0`),
+  check("name_length", sql`LENGTH(name) <= 200`),
+  // Description length constraint
+  check("description_length", sql`description IS NULL OR LENGTH(description) <= 1000`),
+]);
 
 export const datasets = sqliteTable("datasets", {
   id: text("id").primaryKey(),
   projectId: text("project_id").references(() => projects.id, { onDelete: "cascade" }),
   hfId: text("hf_id"),
-  name: text("name").notNull(),
-  description: text("description"),
+  name: text("name", { length: 200 }).notNull(),
+  description: text("description", { length: 500 }),
   storagePath: text("storage_path"),
   meta: blob("meta", { mode: "json" }).$type<Record<string, unknown>>(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-});
+}, (table) => [
+  // Name constraints
+  check("dataset_name_not_empty", sql`LENGTH(TRIM(name)) > 0`),
+  check("dataset_name_length", sql`LENGTH(name) <= 200`),
+  // Description length constraint
+  check("dataset_description_length", sql`description IS NULL OR LENGTH(description) <= 500`),
+  // HF ID format constraint (if provided)
+  check("hf_id_format", sql`hf_id IS NULL OR hf_id LIKE '%.%'`),
+]);
 
 export const jobs = sqliteTable("jobs", {
   id: text("id").primaryKey(),
@@ -61,7 +85,14 @@ export const jobs = sqliteTable("jobs", {
   updatedAt: integer("updated_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-});
+}, (table) => [
+  // Type constraints
+  check("job_type_valid", sql`type IN ('fine-tune', 'dataset-prep', 'model-upload')`),
+  // Status constraints
+  check("job_status_valid", sql`status IN ('pending', 'running', 'completed', 'failed', 'cancelled')`),
+  // Progress constraints
+  check("progress_range", sql`progress IS NULL OR (progress >= 0 AND progress <= 100)`),
+]);
 
 export const jobEvents = sqliteTable("job_events", {
   id: integer("id").primaryKey({ autoIncrement: true }),

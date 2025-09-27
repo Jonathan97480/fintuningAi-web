@@ -9,7 +9,8 @@
     "dev": "tsx watch src/server.ts",
     "worker": "tsx src/workers/jobWorker.ts",
     "db:generate": "npx drizzle-kit generate",
-    "db:migrate": "npx drizzle-kit migrate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:migrate:drizzle": "npx drizzle-kit migrate",
     "db:push": "npx drizzle-kit push",
     "db:seed": "tsx scripts/seed.ts"
   },

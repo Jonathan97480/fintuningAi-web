@@ -28,6 +28,10 @@ export const db = env.DB_DIALECT === "mysql"
     return drizzleSqlite(sqliteDb, { schema: sqliteSchema });
   })();
 
+// Helper functions for date conversion
+export const dateToUnix = (date: Date): number => Math.floor(date.getTime() / 1000);
+export const unixToDate = (unix: number): Date => new Date(unix * 1000);
+
 export type DbClient = typeof db;
 
 export const schema = currentSchema;
