@@ -215,3 +215,5 @@ node_modules/
 !frontend/src/lib/
 !frontend/src/app/datasets/
 !frontend/src/app/models/
+!frontend/src/lib/providers/
+!frontend/src/lib/redux/

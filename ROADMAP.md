@@ -15,9 +15,9 @@
 
 ## Phase 1 - Architecture and Environment
 **Status:** In progress (see docs/phase1-architecture.md).
-- Adopt split-service layout: `frontend/` Next.js UI, `backend/` Fastify API, `workers/python/` orchestrated via BullMQ.
-- Define API contracts and process communication between backend and Python runners (payload schema, status events, logging structures).
-- Finalize Hugging Face credential management (user profile tokens, service fallback, encryption, cache strategy).
+- Split-service layout in place (`frontend/`, `backend/`, `workers/python/`) with shared schemas and BullMQ orchestration scaffolding.
+- API contracts + sequence diagrams captured in docs/phase1-api-contracts.md and docs/phase1-sequences.md (auth, HF, jobs, events).
+- Hugging Face token strategy recorded (user-provided tokens encrypted, daily sync mock implemented).
 - Document key flow sequences (fine-tuning job, daily model refresh, dataset search) for implementation hand-off.
 - Scaffold baseline project directories and ops assets (docker-compose, env templates, placeholders).
 ## Phase 2 - Persistence Layer
@@ -66,3 +66,4 @@
 - Create build scripts (Next.js, Python packaging) and CI pipeline (lint, tests, Docker image if needed).
 - Document operational playbooks: adding new models/datasets, rotating tokens, troubleshooting jobs.
 - Plan release milestones and future enhancements (multi-user roles, advanced analytics, model registry integration).
+
