@@ -1,6 +1,8 @@
-import { FastifyInstance } from \"fastify\";
-import { DatasetSearchPresetSchema } from \"shared\";
-import { z } from \"zod\";
+import { FastifyInstance } from "fastify";
+import { DatasetSearchPresetSchema } from "shared";
+import { z } from "zod";
+import { db, schema } from "../db/client";
+import { eq } from "drizzle-orm";
 
 const modelQuerySchema = z.object({
   task: z.string().optional(),
@@ -23,42 +25,59 @@ const datasetQuerySchema = z.object({
 });
 
 export async function hfRoutes(app: FastifyInstance) {
-  app.get(\"/hf/models\", async (request, reply) => {
+  app.get("/hf/models", async (request, reply) => {
     const parsed = modelQuerySchema.safeParse(request.query);
     if (!parsed.success) {
       return reply.status(400).send({ errors: parsed.error.flatten().fieldErrors });
     }
 
     const { page, pageSize } = parsed.data;
-    const results = Array.from({ length: pageSize }).map((_, index) => ({
-      id: model--,
-      name: Demo HF Model -,
-      task: parsed.data.task ?? \"text-generation\",
-      license: parsed.data.license ?? \"apache-2.0\",
-      quantization: [\"fp16\", \"nf4\"],
-      updatedAt: new Date().toISOString(),
-    }));
+    const offset = (page - 1) * pageSize;
+
+    const models = await db
+      .select()
+      .from(schema.hfModels)
+      .limit(pageSize)
+      .offset(offset);
+
+    const results = models.length
+      ? models.map((model) => ({
+          id: model.id,
+          name: model.name,
+          task: model.task,
+          license: model.license ?? "--",
+          quantization: model.quantization ?? [],
+          updatedAt: new Date(model.lastSeenAt ?? Date.now()).toISOString(),
+        }))
+      : Array.from({ length: pageSize }).map((_, index) => ({
+          id: `model-${page}-${index}`,
+          name: `Demo HF Model ${page}-${index}`,
+          task: parsed.data.task ?? "text-generation",
+          license: parsed.data.license ?? "apache-2.0",
+          quantization: ["fp16", "nf4"],
+          updatedAt: new Date().toISOString(),
+        }));
 
     return {
       page,
       pageSize,
-      total: 200,
+      total: models.length ? models.length + offset : 200,
       results,
     };
   });
 
-  app.get(\"/hf/datasets/search\", async (request, reply) => {
+  app.get("/hf/datasets/search", async (request, reply) => {
     const parsed = datasetQuerySchema.safeParse(request.query);
     if (!parsed.success) {
       return reply.status(400).send({ errors: parsed.error.flatten().fieldErrors });
     }
 
     const results = Array.from({ length: 10 }).map((_, index) => ({
-      id: dataset-,
-      name: Dataset demo ,
+      id: `dataset-${index}`,
+      name: `Dataset demo ${index}`,
       locked: index % 3 === 0 && !request.user?.id,
       size: 4096 * (index + 1),
-      description: \"Resultat de recherche factice en attendant l'integration Hugging Face.\",
+      description: "Resultat de recherche factice en attendant l'integration Hugging Face.",
     }));
 
     return {
@@ -67,13 +86,29 @@ export async function hfRoutes(app: FastifyInstance) {
     };
   });
 
-  app.post(\"/hf/datasets/presets\", async (request, reply) => {
+  app.get("/hf/datasets/presets", async (request) => {
+    if (!request.user?.id) return [];
+    return db
+      .select()
+      .from(schema.datasetPresets)
+      .where(eq(schema.datasetPresets.userId, request.user.id));
+  });
+
+  app.post("/hf/datasets/presets", async (request, reply) => {
     const parsed = DatasetSearchPresetSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ errors: parsed.error.flatten().fieldErrors });
     }
 
-    // TODO: persister en base SQLite.
-    return reply.status(201).send({ presetId: \"demo\", ...parsed.data });
+    const insertResult = await db
+      .insert(schema.datasetPresets)
+      .values({
+        userId: request.user?.id ?? null,
+        name: parsed.data.name,
+        filters: parsed.data.filters,
+      })
+      .returning({ id: schema.datasetPresets.id });
+
+    return reply.status(201).send({ presetId: insertResult[0]?.id ?? null, ...parsed.data });
   });
 }

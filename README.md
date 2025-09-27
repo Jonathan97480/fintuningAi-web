@@ -63,3 +63,8 @@ pm run worker --workspace backend (necessite Redis).
 
 \n## Pages disponibles\n- / : dashboard neon (status API, modeles en avant).\n- /jobs : liste des jobs + suivi live.\n- /jobs/new : creation d'un job fine-tuning via API.\n- /datasets : recherche Hugging Face avec indicateur 🔒.\n- /models : catalogue mock synchronise quotidiennement.\n
 
+\n## Scenario de test UI\n1. 
+pm run db:migrate --workspace backend puis 
+pm run db:seed --workspace backend.\n2. 
+pm run dev --workspace backend (assure-toi que Redis tourne).\n3. 
+pm run dev --workspace frontend.\n4. Ouvre http://localhost:3000, cree un job via /jobs/new, verifie /jobs et le flux temps reel.\n5. Teste /datasets (cherche un terme), /models (filtre par task).\n6. Pour reset, vide rtifacts/fintuning.db et relance les migrations.\n
