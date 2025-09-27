@@ -16,6 +16,7 @@ Modernisation du package de fine-tuning avec interface web Next.js, orchestratio
 - Frontend : Next.js (React + TypeScript) et SASS, design neon dark, avec Redux Toolkit/RTK Query pour l'etat global.
 - Backend : Fastify (Node.js 20) avec BullMQ pour orchestrer les workers Python.
 - Base de donnees : SQLite pilotee via Drizzle ORM (migrations dans ops/migrations).
+- Support multilingue (i18n) pour l'interface et les notifications.
 - Integrations : Hugging Face (HF_TOKEN requis), gestion des jetons API utilisateurs.
 
 ## Regles de developpement
@@ -34,4 +35,5 @@ Consulter `ROADMAP.md` pour la sequence complete des phases (decouverte, archite
 - shared/ : schemas Zod, types partages, clients API.
 - ops/ : docker-compose, migrations, templates .env.
 - artifacts/ : stockage local des datasets, logs, modeles generes (gitignore).
+
 

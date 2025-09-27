@@ -59,3 +59,15 @@
 - Update ROADMAP Phase 1 tasks to reflect finalized choices.
 - Generate sequence diagrams or markdown tables detailing API contracts (WIP).
 - Begin scaffolding repositories/directories according to this layout.
+## 8. Stakeholder Requirements
+- Daily model catalogue sync stores full metadata for all compatible training/quantization models; user-specific filter presets saved in SQLite; models only download on-demand when launching jobs and reuse local cache when available.
+- Dataset search exposes task/language/licence/size filters, supports private datasets via user HF token, and displays a lock prompt when token/access is missing; dataset browsing prefers streaming unless the user opts into full download.
+- UI must be multi-language (i18n-ready) across front-end views, including notifications/messages.
+- Job creation requires output model name, selected model, dataset, number of examples, number of steps, and quantization checkboxes (default FP16 when none selected).
+- Jobs can be paused or cancelled; cancellation removes generated artifacts/directories safely.
+- Job telemetry streams progress percentage, current stage, and download progress for models/datasets.
+- Roles: admin, moderator, user, guest; permissions enforced server-side and in UI.
+- API tokens: up to 3 active per user by default, adjustable by admins via admin interface, with labels/expiry management.
+- HF tokens remain valid until the user revokes them; backend encrypts at rest and logs usage per job.
+- Email notifications on job completion/failure (extensible to future channels).
+- Artifacts downloadable from user history and accessible through secure API endpoints.
