@@ -41,7 +41,7 @@ Consulter `ROADMAP.md` pour la sequence complete des phases (decouverte, archite
 
 
 
-## Installation rapide
+## Installation rapide\nPour basculer entre SQLite et MariaDB, positionner DB_DIALECT dans vos fichiers .env (sqlite par defaut, mysql pour MariaDB) et renseigner les variables MYSQL_*.
 1. Installer les dependances frontend et backend (depuis la racine):
    - `npm install --workspace frontend`
    - `npm install --workspace backend`
@@ -62,3 +62,4 @@ pm run worker --workspace backend (necessite Redis).
 
 
 \n## Pages disponibles\n- / : dashboard neon (status API, modeles en avant).\n- /jobs : liste des jobs + suivi live.\n- /jobs/new : creation d'un job fine-tuning via API.\n- /datasets : recherche Hugging Face avec indicateur 🔒.\n- /models : catalogue mock synchronise quotidiennement.\n
+

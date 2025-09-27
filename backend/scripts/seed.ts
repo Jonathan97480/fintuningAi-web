@@ -1,7 +1,12 @@
 import { nanoid } from "nanoid";
-import { db } from "../src/db/client";
-import { users, apiTokens, projects, jobs } from "../src/db/schema";
 import { randomUUID } from "crypto";
+import { db, closeConnections } from "../src/db/client";
+import {
+  users,
+  apiTokens,
+  projects,
+  jobs,
+} from "../src/db/schema";
 
 async function seed() {
   const userId = nanoid();
@@ -46,8 +51,9 @@ async function seed() {
 seed()
   .then(() => {
     console.log("Seed executed");
-    process.exit(0);
+    return closeConnections();
   })
+  .then(() => process.exit(0))
   .catch((error) => {
     console.error(error);
     process.exit(1);
