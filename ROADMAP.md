@@ -7,6 +7,7 @@
 - Apres chaque nouvelle fonctionnalite, ajouter un test unitaire qui verifie le comportement attendu.
 
 ## Phase 0 - Discovery and Planning
+**Status:** Completed (see docs/phase0-discovery.md).
 - Audit existing Python scripts (fine_tune_3b.py, kilo_dataset_builder.py, notebooks) and current Hugging Face usage (models, datasets, required tokens).
 - Inventory dependencies from requirements.txt; map runtime needs (GPU, Python version, caching strategy).
 - Define measurable goals for the web interface (core flows, performance, monitoring expectations).
@@ -64,3 +65,4 @@
 - Create build scripts (Next.js, Python packaging) and CI pipeline (lint, tests, Docker image if needed).
 - Document operational playbooks: adding new models/datasets, rotating tokens, troubleshooting jobs.
 - Plan release milestones and future enhancements (multi-user roles, advanced analytics, model registry integration).
+
