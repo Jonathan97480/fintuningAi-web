@@ -16,13 +16,13 @@ export const logger = {
 
 // Environment loader (will be validated in the specific service)
 export const createEnvLoader = (schema: z.ZodSchema) => {
-  return () => schema.parse(process.env);
+    return () => schema.parse(process.env);
 };
 
 // Export common environment schema
 export const commonEnvSchema = z.object({
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+    LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });// Error types
 export class AppError extends Error {
     public readonly statusCode: number;
