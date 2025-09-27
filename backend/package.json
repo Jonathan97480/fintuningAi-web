@@ -6,7 +6,8 @@
     "typecheck": "tsc --noEmit",
     "build": "tsup src/server.ts --format cjs --clean",
     "start": "node dist/server.js",
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "worker": "tsx src/workers/jobWorker.ts"
   },
   "keywords": [],
   "author": "",
