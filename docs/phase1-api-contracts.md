@@ -6,89 +6,89 @@
 - Conventions: JSON over HTTPS, camelCase payloads, HTTP status codes per RFC 9110, timestamps in ISO 8601 UTC.
 
 ## 2. Authentication & Authorization
-- **Auth scheme**: JWT Bearer tokens issued on login; refresh tokens stockés HttpOnly; HTTPS obligatoire.
-- **Roles**: admin, moderator, user, guest (guest = lecture seule publique).
+- Auth scheme: JWT Bearer tokens issued on login; refresh tokens stored HttpOnly; HTTPS required.
+- Roles: admin, moderator, user, guest (guest = public read-only, no job execution).
 
 ### 2.1 Session Endpoints
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| POST | /auth/login | Basic (email + password) | Retourne access/refresh tokens + rôle, profil, langue préférée. |
-| POST | /auth/refresh | Refresh token | Fait tourner le couple access/refresh et invalide l'ancien refresh. |
-| POST | /auth/logout | Access token | Révoque le refresh, clôt la session active. |
-| POST | /auth/impersonate | Admin | Permet à un admin d'endosser un autre utilisateur (audit obligatoire). |
+| POST | /auth/login | Basic (email + password) | Returns access and refresh tokens plus role, profile, preferred locale. |
+| POST | /auth/refresh | Refresh token | Rotates the token pair and invalidates the previous refresh token. |
+| POST | /auth/logout | Access token | Revokes refresh token and closes the active session. |
+| POST | /auth/impersonate | Admin | Allows an admin to impersonate another user (audited). |
 
-### 2.2 Profil & Gestion HF token
+### 2.2 Profile & Hugging Face Token
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| GET | /me | Access token | Profil, rôles, presets, statut du HF token (présent/absent, dernière utilisation). |
-| PUT | /me | Access token | Met à jour displayName, locale, préférences de notifications. |
-| PUT | /me/hf-token | Access token | Stocke/met à jour le HF token chiffré (`token`, `label` optionnel). |
-| DELETE | /me/hf-token | Access token | Supprime le token HF et stoppe les jobs nécessitant des accès privés. |
+| GET | /me | Access token | Returns profile, roles, saved presets, Hugging Face token status (present/absent, lastUsedAt). |
+| PUT | /me | Access token | Updates displayName, locale, notification preferences. |
+| PUT | /me/hf-token | Access token | Stores or updates the encrypted HF token (`token`, optional `label`). |
+| DELETE | /me/hf-token | Access token | Deletes the HF token and stops jobs that require private assets. |
 
-### 2.3 Tokens API (quota par défaut 3)
+### 2.3 API Tokens (default quota 3)
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| GET | /me/api-tokens | Access token | Liste (id, label, createdAt, lastUsedAt, expiresAt). |
-| POST | /me/api-tokens | Access token | Crée un token (label requis, `expiresAt` optionnel) et vérifie le quota. |
-| PATCH | /me/api-tokens/{tokenId} | Access token | Renomme ou ajuste l'expiration. |
-| DELETE | /me/api-tokens/{tokenId} | Access token | Révoque un token (audit). |
-| PATCH | /admin/api-token-quota | Admin | Modifie la limite par utilisateur. |
+| GET | /me/api-tokens | Access token | Lists tokens (id, label, createdAt, lastUsedAt, expiresAt). |
+| POST | /me/api-tokens | Access token | Creates a token (label required, optional `expiresAt`) and enforces quota. |
+| PATCH | /me/api-tokens/{tokenId} | Access token | Renames or adjusts expiration. |
+| DELETE | /me/api-tokens/{tokenId} | Access token | Revokes a token (audited). |
+| PATCH | /admin/api-token-quota | Admin | Changes the maximum tokens per user. |
 
 ## 3. Hugging Face Catalogue & Dataset APIs
 
-### 3.1 Catalogue de modèles
+### 3.1 Model Catalogue
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| GET | /hf/models | Public (token optionnel) | Snapshot paginé avec filtres `task`, `license`, `framework`, `quantization`, `minParams`, `maxParams`, `search`, `sort`, `page`, `pageSize`. Applique presets utilisateur si connecté. |
-| POST | /hf/models/presets | Access token | Sauvegarde un preset (`name`, `filters`). Limite 5 par utilisateur. |
-| GET | /hf/models/presets | Access token | Liste des presets avec flag `isDefault`. |
-| DELETE | /hf/models/presets/{presetId} | Access token | Supprime un preset. |
+| GET | /hf/models | Public (token optional) | Returns cached paginated snapshot with filters `task`, `license`, `framework`, `quantization`, `minParams`, `maxParams`, `search`, `sort`, `page`, `pageSize`. Applies user presets when authenticated. |
+| POST | /hf/models/presets | Access token | Saves a preset (`name`, `filters`). Limit 5 presets per user. |
+| GET | /hf/models/presets | Access token | Lists presets with `isDefault` flag used during daily sync. |
+| DELETE | /hf/models/presets/{presetId} | Access token | Deletes a preset. |
 
-### 3.2 Recherche datasets
+### 3.2 Dataset Search
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| GET | /hf/datasets/search | Public (token optionnel) | Proxy HF. Query: `q`, `task`, `language`, `license`, `sizeMin`, `sizeMax`, `sort`. Ajoute `locked=true` si dataset privé sans token. |
-| GET | /hf/datasets/{datasetId} | Access token | Détails (splits, colonnes, licence, lastSyncedAt). Téléchargement via `download=true` si autorisations. |
-| POST | /hf/datasets/presets | Access token | Enregistre un preset de recherche dataset. |
+| GET | /hf/datasets/search | Public (token optional) | Proxy to HF search. Query: `q`, `task`, `language`, `license`, `sizeMin`, `sizeMax`, `sort`. Response marks `locked=true` when private dataset requires token. |
+| GET | /hf/datasets/{datasetId} | Access token | Returns metadata (splits, columns, license, lastSyncedAt). Download triggered only with `download=true` when permissions allow. |
+| POST | /hf/datasets/presets | Access token | Saves a dataset search preset. |
 
-### 3.3 Synchro admin
+### 3.3 Admin Sync
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| POST | /admin/hf/sync | Admin | Déclenche la synchro manuelle (cron nocturne). Retour : `modelsAdded`, `modelsUpdated`, `modelsRemoved`, `durationSec`. |
+| POST | /admin/hf/sync | Admin | Triggers manual catalogue sync (nightly cron by default). Returns `modelsAdded`, `modelsUpdated`, `modelsRemoved`, `durationSec`. |
 
 ## 4. Job Management APIs
 
-### 4.1 Ressources jobs
+### 4.1 Job Resources
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| GET | /jobs | Access token | Liste paginée filtrable par statut/type/date. |
-| POST | /jobs/fine-tune | Access token (≥ user) | `outputName`, `baseModelId`, `datasetId`, `numExamples`, `maxSteps`, `quantizations[]`, `hyperparams?`, `notes?`. |
-| POST | /jobs/dataset-build | Access token (≥ user) | Génère un dataset (`sourceType`, `config`, `maxExamples`). |
-| GET | /jobs/{jobId} | Access token | Détails complets (statut, progrès, worker, métriques, artefacts). |
-| PATCH | /jobs/{jobId}/pause | Owner/mod/admin | Pause avec checkpoint. |
-| PATCH | /jobs/{jobId}/resume | Owner/mod/admin | Reprise du job. |
-| PATCH | /jobs/{jobId}/cancel | Owner/mod/admin | Annule + purge les artefacts temporaires. |
-| GET | /jobs/{jobId}/events | Access token | Historique des événements. |
-| GET | /jobs/{jobId}/artifacts | Access token | Artefacts téléchargeables (type, taille, checksum, URL signée, expiration). |
-| GET | /jobs/{jobId}/logs | Access token | Derniers logs avec `sinceEventId`. |
+| GET | /jobs | Access token | Paginated list filterable by status, type, date range. |
+| POST | /jobs/fine-tune | Access token (role >= user) | Requires `outputName`, `baseModelId`, `datasetId`, `numExamples`, `maxSteps`, `quantizations[]`, optional `hyperparams`, `notes`. |
+| POST | /jobs/dataset-build | Access token (role >= user) | Launches dataset builder (`sourceType`, `config`, `maxExamples`). |
+| GET | /jobs/{jobId} | Access token | Detailed information (status, progress, worker, metrics, artifacts, notifications). |
+| PATCH | /jobs/{jobId}/pause | Owner/moderator/admin | Pauses job with worker checkpoint. |
+| PATCH | /jobs/{jobId}/resume | Owner/moderator/admin | Resumes paused job (requeues if needed). |
+| PATCH | /jobs/{jobId}/cancel | Owner/moderator/admin | Cancels job and cleans temporary artifacts. |
+| GET | /jobs/{jobId}/events | Access token | Paged event history (progress, warnings, downloads). |
+| GET | /jobs/{jobId}/artifacts | Access token | Lists downloadable artifacts (type, size, checksum, signed URL, expiry). |
+| GET | /jobs/{jobId}/logs | Access token | Returns recent logs with `sinceEventId` support. |
 
 ### 4.2 Notifications
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| GET | /notifications/settings | Access token | Préférences email (jobComplete, jobFailed, weeklyDigest, locale). |
-| PUT | /notifications/settings | Access token | Met à jour les préférences (par défaut jobComplete + jobFailed). |
-| GET | /notifications/history | Access token | Audit des notifications envoyées. |
+| GET | /notifications/settings | Access token | Email notification preferences (jobComplete, jobFailed, weeklyDigest, locale). |
+| PUT | /notifications/settings | Access token | Updates preferences (default jobComplete and jobFailed true). |
+| GET | /notifications/history | Access token | Notification audit history. |
 
 ## 5. Event Streams
-- Transport : WebSocket `/ws` (fallback SSE `/events`).
-- Auth : JWT via header `Authorization` ou query `token` au handshake.
-- Envelope : `{ "type": string, "timestamp": string, "payload": object }`.
+- Transport: WebSocket `/ws` (fallback SSE `/events`).
+- Authentication: JWT via `Authorization` header or query `token` during handshake.
+- Envelope: `{ "type": string, "timestamp": string, "payload": object }`.
 
-### 5.1 Types d'événements
-| Type | Émis par | Payload |
+### 5.1 Event Types
+| Type | Emitted By | Payload |
 | --- | --- | --- |
 | job.progress | Backend monitor | `{ jobId, status, progressPct, stage, etaSec?, metrics? }` |
-| job.download | Worker Python | `{ jobId, resourceType: "model"\|"dataset", name, progressPct, bytesDownloaded, totalBytes? }` |
+| job.download | Python worker | `{ jobId, resourceType: "model"|"dataset", name, progressPct, bytesDownloaded, totalBytes? }` |
 | job.paused | Backend | `{ jobId, reason }` |
 | job.cancelled | Backend | `{ jobId, reason }` |
 | job.completed | Backend | `{ jobId, success: true, artifacts }` |
@@ -96,28 +96,28 @@
 | notification.sent | Backend | `{ notificationId, jobId?, channel, status }` |
 | system.alert | Ops | `{ severity, message, link? }` |
 
-Client subscribe : `{ "type": "subscribe", "jobId": "..." }`. Unsubscribe : `{ "type": "unsubscribe", "jobId": "..." }`.
+Clients subscribe with `{ "type": "subscribe", "jobId": "..." }` and unsubscribe with `{ "type": "unsubscribe", "jobId": "..." }`.
 
 ## 6. Permission Matrix
 
 | Capability | Guest | User | Moderator | Admin |
 | --- | --- | --- | --- | --- |
-| Parcourir catalogue & datasets publics | ✅ | ✅ | ✅ | ✅ |
-| Sauvegarder des presets | ❌ | ✅ | ✅ | ✅ |
-| Stocker un token HF | ❌ | ✅ | ✅ | ✅ |
-| Lancer jobs (fine-tune/dataset) | ❌ | ✅ | ✅ | ✅ |
-| Pause jobs personnels | ❌ | ✅ | ✅ | ✅ |
-| Annuler jobs personnels | ❌ | ✅ | ✅ | ✅ |
-| Gérer jobs d'autrui | ❌ | ❌ | ✅ (équipe/projet) | ✅ |
-| Gérer ses tokens API | ❌ | ✅ (max 3) | ✅ (max 3) | ✅ (limite admin) |
-| Modifier quota tokens | ❌ | ❌ | ❌ | ✅ |
-| Synchro HF manuelle | ❌ | ❌ | ❌ | ✅ |
-| Dashboards & audits | ❌ | ❌ | ✅ (limité) | ✅ (complet) |
-| Gestion des rôles | ❌ | ❌ | ❌ | ✅ |
+| Browse catalogue and public datasets | NO | YES | YES | YES |
+| Save presets | NO | YES | YES | YES |
+| Store HF token | NO | YES | YES | YES |
+| Launch jobs (fine-tune/dataset) | NO | YES | YES | YES |
+| Pause own jobs | NO | YES | YES | YES |
+| Cancel own jobs | NO | YES | YES | YES |
+| Manage other users' jobs | NO | NO | YES (same team/project) | YES |
+| Manage own API tokens | NO | YES (max 3) | YES (max 3) | YES (admin limit) |
+| Change API token quota | NO | NO | NO | YES |
+| Trigger manual HF sync | NO | NO | NO | YES |
+| Access dashboards/audits | NO | NO | YES (limited) | YES (full) |
+| Manage roles | NO | NO | NO | YES |
 
 ## 7. Open Questions
-- Fournisseur email (SendGrid, SES, autre) et localisation des templates à confirmer.
-- Limites exactes pour les presets dataset et partage éventuel entre rôles.
-- Politique invité pour le proxy HF : rate limiting / captcha ?
-- Politique de rétention artefacts/logs (expiration automatique ?).
-- Définition d'une "équipe" pour les droits modérateur (projet vs organisation).
+- Email provider (SendGrid, SES, other) and localisation of templates still TBD.
+- Final limits for dataset search presets and whether sharing across roles is required.
+- Guest access policy for HF proxy (rate limiting, captcha, both?).
+- Retention policy for artifacts/logs (auto-expiration vs manual cleanup).
+- Definition of "team" for moderator permissions (project-level vs organisation-level).
